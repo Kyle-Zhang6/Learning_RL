@@ -1,6 +1,5 @@
 import gym
 import torch
-import numpy as np
 from torch import nn, optim
 from torch.nn import functional as F
 from torch.distributions import Categorical
@@ -88,11 +87,12 @@ DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 if __name__ == '__main__':
     ENV_NAME        = 'CartPole-v0'
-    TOTAL_EPISODE   = 2000
+    TOTAL_EPISODE   = 5000
     RENDER_GAP      = 100
-    GAMMA           = 0.98
+    PRINT_GAP       = 20
+    GAMMA           = 0.95
     ACTOR_LR        = 0.0003
-    CRITIC_LR       = 0.003
+    CRITIC_LR       = 0.001
 
     env = gym.make(ENV_NAME)
     state_dim = env.observation_space.shape[0]
@@ -102,10 +102,10 @@ if __name__ == '__main__':
     critic = Critic(state_dim, 64, action_dim, lr=CRITIC_LR)
 
     episode_rewards = []
+    episode_reward = 0
     for ep in range(TOTAL_EPISODE):
         render = True if ((ep % RENDER_GAP) == RENDER_GAP - 1) else False
         done = False
-        episode_reward = 0
         discount = 1.
 
         state = env.reset()
@@ -128,10 +128,11 @@ if __name__ == '__main__':
             discount *= GAMMA
             state, action = state_next, action_next
 
-        episode_rewards.append(episode_reward)
-        print('Episode NO.{}: reward = {}'.format(ep+1, episode_reward))
+        if ep % PRINT_GAP == (PRINT_GAP - 1):
+            episode_rewards.append(episode_reward / PRINT_GAP)
+            episode_reward = 0
+            print('Episode NO.{} ~ {}: avg_reward = {}'.format(ep + 1 - PRINT_GAP, ep, episode_rewards[-1]))
 
-    print('\nAverage Reward = {}'.format(np.mean(episode_rewards)))
     # Show the training process and save the fig
     plt.plot(episode_rewards)
     plt.xlabel('Episode_Ind')
