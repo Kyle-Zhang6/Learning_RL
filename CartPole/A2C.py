@@ -77,6 +77,8 @@ class Critic:
 class Memory:
     def __init__(self):
         self.trajectory = []
+<<<<<<< HEAD
+=======
 
     def push(self, step):
         self.trajectory.append(step)
@@ -102,6 +104,37 @@ class Memory:
         return s1_list, a_list, r_list, s2_list, done_list
 
 
+def revise_reward(reward, steps, done):
+    if done and steps < 200:
+        reward -= 100
+    return reward
+>>>>>>> e7e18e30682e8f6e921e851725e19c0140602bd1
+
+    def push(self, step):
+        self.trajectory.append(step)
+
+    def clear(self):
+        self.trajectory = []
+
+    def make_batch(self):
+        s1_list, a_list, r_list, s2_list, done_list = [], [], [], [], []
+        for t in self.trajectory[::-1]:
+            s1, a, r, s2, done = t
+            s1_list.append(s1)
+            a_list.append([a])
+            r_list.append([r])
+            s2_list.append(s2)
+            done_list.append([done])
+
+        s1_list, s2_list = torch.FloatTensor(s1_list), torch.FloatTensor(s2_list)
+        r_list, done_list = torch.FloatTensor(r_list), torch.FloatTensor(done_list)
+        a_list = torch.tensor(a_list, dtype=torch.int64)
+        self.clear()
+
+        return s1_list, a_list, r_list, s2_list, done_list
+
+<<<<<<< HEAD
+
 if __name__ == '__main__':
     ENV_NAME        = 'CartPole-v0'
     TOTAL_EPISODE   = 5000
@@ -109,6 +142,14 @@ if __name__ == '__main__':
     PRINT_GAP       = 20
     GAMMA           = 0.95
     ACTOR_LR        = 0.0002
+=======
+if __name__ == '__main__':
+    ENV_NAME        = 'CartPole-v0'
+    TOTAL_EPISODE   = 10000
+    RENDER_GAP      = 100
+    GAMMA           = 0.99
+    ACTOR_LR        = 0.0003
+>>>>>>> e7e18e30682e8f6e921e851725e19c0140602bd1
     CRITIC_LR       = 0.001
     TRAJECTORY_L    = 10  # Length of trajectory for each training step
 
@@ -125,6 +166,10 @@ if __name__ == '__main__':
     for ep in range(TOTAL_EPISODE):
         render = True if ((ep % RENDER_GAP) == RENDER_GAP - 1) else False
         done = False
+<<<<<<< HEAD
+=======
+        episode_reward = 0
+>>>>>>> e7e18e30682e8f6e921e851725e19c0140602bd1
 
         s1 = env.reset()
         while not done:
@@ -135,6 +180,10 @@ if __name__ == '__main__':
                 a = actor.decide(torch.FloatTensor(s1))
                 s2, r, done, _ = env.step(a)
                 episode_reward += r
+<<<<<<< HEAD
+=======
+                r = revise_reward(r, episode_reward, done)
+>>>>>>> e7e18e30682e8f6e921e851725e19c0140602bd1
 
                 memory.push((s1, a, r, s2, done))
                 s1 = s2
